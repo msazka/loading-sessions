@@ -1,5 +1,6 @@
 package com.dcs.charging.session
 
+import com.dcs.charging.common.ConflictException
 import com.dcs.charging.common.NotFoundException
 import com.dcs.charging.tariff.TariffRepository
 import org.springframework.stereotype.Service
@@ -31,6 +32,9 @@ class ChargingSessionService(
     @Transactional
     fun stop(id: UUID, request: StopSessionRequest): ChargingSession {
         val session = sessions.findById(id).orElseThrow { NotFoundException("Session $id not found") }
+        if (session.status != SessionStatus.ACTIVE) {
+            throw ConflictException("Session $id is already completed")
+        }
         val energyKwh = requireNotNull(request.energyKwh)
 
         session.status = SessionStatus.COMPLETED

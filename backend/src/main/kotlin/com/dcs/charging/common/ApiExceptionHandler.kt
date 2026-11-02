@@ -1,5 +1,6 @@
 package com.dcs.charging.common
 
+import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.http.HttpStatus
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -12,12 +13,23 @@ data class ErrorResponse(val message: String, val errors: Map<String, String> = 
 
 class NotFoundException(message: String) : RuntimeException(message)
 
+class ConflictException(message: String) : RuntimeException(message)
+
 @RestControllerAdvice
 class ApiExceptionHandler {
 
     @ExceptionHandler(NotFoundException::class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     fun notFound(ex: NotFoundException) = ErrorResponse(ex.message ?: "Not found")
+
+    @ExceptionHandler(ConflictException::class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    fun conflict(ex: ConflictException) = ErrorResponse(ex.message ?: "Conflict")
+
+    @ExceptionHandler(OptimisticLockingFailureException::class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    fun concurrentUpdate(ex: OptimisticLockingFailureException) =
+        ErrorResponse("The resource was changed by another request")
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)

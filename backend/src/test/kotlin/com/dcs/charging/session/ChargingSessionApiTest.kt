@@ -90,6 +90,34 @@ class ChargingSessionApiTest(
         }
     }
 
+    @Test
+    fun `stopping a completed session returns 409 and keeps the original values`() {
+        val id = startSession(customerId = "c-6", tariffCode = "SUBSCRIPTION_M")
+
+        mockMvc.post("/api/sessions/$id/stop") {
+            contentType = MediaType.APPLICATION_JSON
+            content = """{ "energyKwh": 20.000 }"""
+        }.andExpect {
+            status { isOk() }
+        }
+
+        mockMvc.post("/api/sessions/$id/stop") {
+            contentType = MediaType.APPLICATION_JSON
+            content = """{ "energyKwh": 5 }"""
+        }.andExpect {
+            status { isConflict() }
+            jsonPath("$.message") { exists() }
+        }
+
+        mockMvc.get("/api/sessions") {
+            param("customerId", "c-6")
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$[0].energyKwh") { value(20.0) }
+            jsonPath("$[0].cost") { value(9.35) }
+        }
+    }
+
     private fun startSession(customerId: String, tariffCode: String): String {
         val json = mockMvc.post("/api/sessions") {
             contentType = MediaType.APPLICATION_JSON

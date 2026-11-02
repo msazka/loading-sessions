@@ -38,19 +38,23 @@ function SessionTable({ sessions, onStop }: Props) {
             <td>{new Date(s.startedAt).toLocaleString()}</td>
             <td>{s.energyKwh == null ? '–' : `${s.energyKwh} kWh`}</td>
             <td>{formatEuro(s.cost)}</td>
-            <td className="actions">
-              <input
-                className="kwh"
-                type="number"
-                min="0"
-                step="0.001"
-                placeholder="kWh"
-                value={energy[s.id] ?? ''}
-                onChange={(e) => setEnergy((prev) => ({ ...prev, [s.id]: e.target.value }))}
-              />
-              <button disabled={!energy[s.id]} onClick={() => onStop(s.id, Number(energy[s.id]))}>
-                Stop
-              </button>
+            <td>
+              {s.status === 'ACTIVE' && (
+                <div className="actions">
+                  <input
+                    className="kwh"
+                    type="number"
+                    min="0"
+                    step="0.001"
+                    placeholder="kWh"
+                    value={energy[s.id] ?? ''}
+                    onChange={(e) => setEnergy((prev) => ({ ...prev, [s.id]: e.target.value }))}
+                  />
+                  <button disabled={!energy[s.id]} onClick={() => onStop(s.id, Number(energy[s.id]))}>
+                    Stop
+                  </button>
+                </div>
+              )}
             </td>
           </tr>
         ))}

@@ -11,6 +11,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import jakarta.persistence.Version
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
@@ -36,6 +37,10 @@ class ChargingSession(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     var id: UUID? = null
+
+    /** Optimistic lock: of two concurrent updates to a session, only the first commit succeeds. */
+    @Version
+    var version: Long? = null
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

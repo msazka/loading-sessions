@@ -29,13 +29,14 @@ The frontend has no test runner, and neither side has a linter. `npm run build` 
 
 ## Architecture
 
-The backend has two feature packages, `session` and `tariff`, plus `common` for error handling. `session` depends on `tariff`.
+The backend has three feature packages, `session`, `tariff` and `invoice`, plus `common` for error handling. `session` depends on `tariff`, and `invoice` reads from `session`.
 
-**Request flow:** controller (validates with `@Valid`, maps to DTO) → `ChargingSessionService` (transactions, clock, state changes) → repository. Controllers return DTOs, never entities.
+**Request flow:** controller (validates with `@Valid`, maps to DTO) → `ChargingSessionService` (transactions, clock, state changes) → repository. Controllers return DTOs, never entities. `InvoiceService` builds its own response DTO, because an invoice is calculated and has no single entity to map from.
 
 **Things that span files:**
 
 - **Pricing** is computed once, in `Pricing.cost`, when a session is stopped, and stored on the session. Prices are gross EUR `BigDecimal`s, and the cost is rounded half-up to cents.
+- **Invoices** add up the stored `cost` rather than recalculating it, and work out VAT once on the total, because prices are gross. A session belongs to the Europe/Berlin calendar month in which it ended.
 - **Time** comes from the `Clock` bean defined in `ChargingApplication`. Services inject it rather than calling `Instant.now()`.
 - **Database:** H2 in-memory with `ddl-auto: create-drop` and no migrations, so the schema comes from the entities and all data is lost on restart. `TariffSeeder` recreates the tariffs at startup, which also makes them available in `@SpringBootTest`.
 - **Lazy loading:** `open-in-view` is off, and `SessionResponse.from` runs in the controller, outside the transaction. Any lazy association it reads will fail; `ChargingSession.tariff` works because `@ManyToOne` is eager by default.
@@ -46,3 +47,5 @@ The backend has two feature packages, `session` and `tariff`, plus `common` for 
 ## Tests
 
 `ChargingSessionApiTest` is a `@SpringBootTest` with MockMvc against the real H2 database. Tests don't roll back and share one database, so each test uses its own `customerId` (`c-1`, `c-2`, ...). Assertions on list results depend on this, so new tests need a new ID.
+
+`InvoiceApiTest` and `ConcurrentStopTest` mock the `Clock` bean (to set exact end times and to force the race), and each sets its own `spring.datasource.url` so it doesn't share data with the other test classes.

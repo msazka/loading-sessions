@@ -19,6 +19,25 @@ export type Session = {
   cost: number | null
 }
 
+export type InvoiceLine = {
+  sessionId: string
+  endedAt: string
+  tariffCode: string
+  energyKwh: number
+  cost: number
+}
+
+export type Invoice = {
+  customerId: string
+  month: string
+  lines: InvoiceLine[]
+  totalEnergyKwh: number
+  totalGross: number
+  vatRate: number
+  totalNet: number
+  totalVat: number
+}
+
 export type StartSessionRequest = {
   customerId: string
   chargePointId: string
@@ -69,5 +88,9 @@ export function stopSession(id: string, energyKwh: number): Promise<Session> {
   })
 }
 
-export const formatEuro = (value: number | null) =>
+export function getInvoice(customerId: string, month: string): Promise<Invoice> {
+  return request<Invoice>(`/api/customers/${encodeURIComponent(customerId)}/invoices/${encodeURIComponent(month)}`)
+}
+
+export const formatEuro =(value: number | null) =>
   value == null ? '–' : new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(value)

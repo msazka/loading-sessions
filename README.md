@@ -38,6 +38,7 @@ cd frontend && npm run build
 | POST | `/api/sessions` | Start a session: `{ customerId, chargePointId, tariffCode }` |
 | POST | `/api/sessions/{id}/stop` | Stop a session: `{ energyKwh }` |
 | GET | `/api/sessions?customerId=` | List sessions, newest first, optional customer filter |
+| GET | `/api/customers/{customerId}/invoices/{month}` | Monthly invoice, `month` is `YYYY-MM` in German time |
 
 ## Pricing
 

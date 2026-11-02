@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { listSessions, listTariffs, stopSession, type Session, type Tariff } from './api'
+import InvoiceSection from './InvoiceSection'
 import SessionTable from './SessionTable'
 import StartSessionForm from './StartSessionForm'
 import './App.css'
@@ -9,6 +10,7 @@ function App() {
   const [sessions, setSessions] = useState<Session[]>([])
   const [customerFilter, setCustomerFilter] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [stopCount, setStopCount] = useState(0)
 
   const loadSessions = useCallback(() => {
     listSessions(customerFilter.trim() || undefined)
@@ -35,6 +37,7 @@ function App() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to stop session')
     }
+    setStopCount((count) => count + 1)
     loadSessions()
   }
 
@@ -55,6 +58,8 @@ function App() {
         {error && <p className="error">{error}</p>}
         <SessionTable sessions={sessions} onStop={handleStop} />
       </section>
+
+      <InvoiceSection stopCount={stopCount} />
     </main>
   )
 }

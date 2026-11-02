@@ -15,6 +15,8 @@ class NotFoundException(message: String) : RuntimeException(message)
 
 class ConflictException(message: String) : RuntimeException(message)
 
+class BadRequestException(message: String) : RuntimeException(message)
+
 @RestControllerAdvice
 class ApiExceptionHandler {
 
@@ -30,6 +32,10 @@ class ApiExceptionHandler {
     @ResponseStatus(HttpStatus.CONFLICT)
     fun concurrentUpdate(ex: OptimisticLockingFailureException) =
         ErrorResponse("The resource was changed by another request")
+
+    @ExceptionHandler(BadRequestException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun badRequest(ex: BadRequestException) = ErrorResponse(ex.message ?: "Bad request")
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)

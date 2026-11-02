@@ -42,6 +42,12 @@ input.
 `loadSessions` in `App.tsx` runs on every keystroke in the filter and doesn't cancel earlier
 requests. If responses arrive out of order, the table can show the results for an older filter value.
 
+### 5a. Customer IDs containing `/` can't be invoiced (reproduced)
+Sessions accept any non-blank `customerId`, but the invoice URL can't carry a `/`, even encoded as
+`%2F`. The request is rejected with a 400 before it reaches the app, so the UI only shows `HTTP 400`.
+
+- **Possible fix:** restrict the characters allowed in `customerId` when a session is started.
+
 ## Setup and configuration
 
 ### 6. The README's backend commands fail on JDK 25 (reproduced)
@@ -56,3 +62,18 @@ turned off before any shared deployment. Access from another machine was not tes
 ### 8. Minor
 - The README API table doesn't list the 409 from `POST /api/sessions/{id}/stop`.
 - `/favicon.ico` returns 404, which logs one console error on page load (reproduced).
+
+### 9. Question for Finance: implausible invoice years
+A correctly formatted month with an unlikely year, such as `0026-11` (a typo for `2026-11`), returns
+200 with an empty invoice instead of 400. The ticket doesn't define a valid range, so no cutoff was
+added. Should there be one?
+
+## Ticket 2 stretch question
+
+**A session that started in October and ended in November belongs to November.** The ticket says a
+session belongs to the month in which it ended, in German time. That is also when its cost is
+calculated, and because each session has one end time, it is billed exactly once. Its whole cost goes
+on the November invoice and is not split between the months.
+
+The month is judged in German time: a session ending at `2026-10-31T23:30:00Z` ended at 00:30 on
+1 November in Berlin, so it belongs to November even though the UTC date is still 31 October.

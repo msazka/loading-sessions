@@ -91,6 +91,23 @@ td {
   background: #dafbe1;
 }
 
+.totals {
+  display: grid;
+  grid-template-columns: max-content max-content;
+  justify-content: end;
+  gap: 4px 24px;
+  margin: 16px 8px 0;
+}
+
+.totals dd {
+  margin: 0;
+  text-align: right;
+}
+
+.total-gross {
+  font-weight: 600;
+}
+
 .error,
 .field-error {
   color: #cf222e;
